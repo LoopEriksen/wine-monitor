@@ -1,0 +1,49 @@
+# Wine Monitor Roadmap
+
+## Mission
+To build a Python‑based GUI application that monitors and controls a 5‑gallon automated wine fermentation system, interfacing with Raspberry Pi GPIO, providing notifications, and graphing key parameters. The system should run continuously, auto‑start at boot, and be deployable via an installer.
+
+## Project Scope
+- Raspberry Pi 4 (or similar) hosting the application.
+- Python 3.10+ with relevant libraries (PyQt5/6, matplotlib, RPi.GPIO or gpiozero, watchdog, etc.)
+- GUI with real‑time graphs, status panels, control buttons.
+- Notification system (email, push, local).
+- Data logging to SQLite/CSV.
+- Installer package (dpkg/apt or Snap) that installs dependencies, configures autostart.
+
+## High‑Level Architecture
+1. **Data acquisition layer** – GPIO reading + sensor integration (temperature, pressure, etc.).
+2. **Control layer** – actuation commands to GPIO pins.
+3. **Application layer** – GUI, scheduling, persistence.
+4. **Notification layer** – messaging, alerts.
+
+## Milestones
+1. Environment setup & GitHub repo initialization.
+2. Sensor data acquisition prototype.
+3. Control command interface prototype.
+4. Basic GUI skeleton with status panel.
+5. Real‑time plotting.
+6. Notification module.
+7. Persistence & logging.
+8. Installer & autostart.
+9. **Simulator and Windows GUI testing** – Build a stub GPIO simulator so the GUI can be run on a Windows machine for rapid iteration.
+10. Testing & documentation.
+
+## Tasks (to be updated)
+- [ ] Create GitHub repository and push initial commit.
+- [ ] Setup Raspberry Pi environment (Python, libraries).
+- [ ] Define GPIO pin mapping and test readings.
+- [ ] Design GUI mockup.
+- [ ] Implement main loop and event handling.
+- [ ] Write unit tests.
+- [ ] Create installer script (e.g., pyinstaller, deb).
+- [ ] Configure systemd service for autostart.
+- [ ] Draft README with usage instructions.
+- [ ] **Add a GPIO simulator** for Windows: add `simulator.py` and update `main.py`.
+- [ ] **Verify GUI runs on Windows** with `SIMULATE=1`.
+
+## Notes
+- Use virtualenv for dependency isolation.
+- Keep code modular to allow future expansion (e.g., adding new sensors).
+
+<!-- project: path:C:\Users\pscav\.openclaw\workspace -->
