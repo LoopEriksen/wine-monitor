@@ -29,18 +29,16 @@ To build a Python‑based GUI application that monitors and controls a 5‑gallo
 9. Testing & documentation.
 
 ## Tasks (to be updated)
-- [ ] Create GitHub repository and push initial commit.
+- [x] Create GitHub repository and push initial commit.
+- [x] Draft README with usage instructions.
+- [x] Write unit tests.
 - [ ] Setup Raspberry Pi environment (Python, libraries).
 - [ ] Define GPIO pin mapping and test readings.
 - [ ] Design GUI mockup.
 - [ ] Implement main loop and event handling.
-- [ ] Write unit tests.
 - [ ] Create installer script (e.g., pyinstaller, deb).
 - [ ] Configure systemd service for autostart.
-- [ ] Draft README with usage instructions.
 
 ## Notes
 - Use virtualenv for dependency isolation.
 - Keep code modular to allow future expansion (e.g., adding new sensors).
-
-<!-- project: path:C:\Users\pscav\.openclaw\workspace -->

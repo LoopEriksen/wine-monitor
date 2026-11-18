@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wine-monitor"
+version = "0.1.0"
+description = "Monitor and control a 5‑gallon wine fermentation system on a Raspberry Pi."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Loop Eriksen", email = "29931840+LoopEriksen@users.noreply.github.com" }]
+keywords = ["raspberry-pi", "fermentation", "wine", "iot", "gpio"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Home Automation",
+]
+dependencies = [
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+# GUI + hardware extras. Kept optional so the testable core installs and runs
+# on any machine (CI/Windows) without a display server or RPi.GPIO.
+gui = ["PyQt5>=5.15"]
+hardware = ["RPi.GPIO>=0.7", "gpiozero>=2.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+wine-monitor = "wine_monitor.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["wine_monitor*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

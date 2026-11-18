@@ -1,4 +1,11 @@
-pyqt5>=5.15
-matplotlib
-RPi.GPIO
-gpiozero
+# Wine Monitor — runtime dependencies
+#
+# Core (installs on any machine):
+matplotlib>=3.7
+
+# GUI (Raspberry Pi / Linux with a display):
+PyQt5>=5.15
+
+# Hardware (Raspberry Pi only — do not install on non-Pi machines):
+RPi.GPIO>=0.7
+gpiozero>=2.0
