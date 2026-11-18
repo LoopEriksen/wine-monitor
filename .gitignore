@@ -4,6 +4,7 @@ __pycache__/
 *.pyo
 *.pyd
 venv/
+.venv/
 .env/
 .env.*
 # IDE specific
@@ -11,3 +12,9 @@ venv/
 .idea/
 *.sublime-workspace
 *.sublime-project
+# Build / test artifacts
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
