@@ -25,10 +25,10 @@ dependencies = [
 # on any machine (CI/Windows) without a display server or RPi.GPIO.
 gui = ["PyQt5>=5.15"]
 hardware = ["RPi.GPIO>=0.7", "gpiozero>=2.0"]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "PyQt5>=5.15"]
 
 [project.scripts]
-wine-monitor = "wine_monitor.__main__:main"
+wine-monitor = "wine_monitor.gui:main"
 
 [tool.setuptools.packages.find]
 include = ["wine_monitor*"]

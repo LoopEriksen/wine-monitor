@@ -18,26 +18,29 @@ To build a Python‑based GUI application that monitors and controls a 5‑gallo
 4. **Notification layer** – messaging, alerts.
 
 ## Milestones
-1. Environment setup & GitHub repo initialization.
-2. Sensor data acquisition prototype.
-3. Control command interface prototype.
-4. Basic GUI skeleton with status panel.
-5. Real‑time plotting.
+1. Environment setup & GitHub repo initialization. ✅
+2. Sensor data acquisition prototype. ✅ (simulated; real sensors pending)
+3. Control command interface prototype. ✅ (simulated actuators; real relays pending)
+4. Basic GUI skeleton with status panel. ✅
+5. Real‑time plotting. ✅
 6. Notification module.
-7. Persistence & logging.
+7. Persistence & logging. ✅ (SQLite + CSV export)
 8. Installer & autostart.
-9. Testing & documentation.
+9. Testing & documentation. ✅ (core; expanded as features land)
 
 ## Tasks (to be updated)
 - [x] Create GitHub repository and push initial commit.
 - [x] Draft README with usage instructions.
 - [x] Write unit tests.
+- [x] Design GUI mockup.
+- [x] Implement main loop and event handling.
 - [ ] Setup Raspberry Pi environment (Python, libraries).
 - [ ] Define GPIO pin mapping and test readings.
-- [ ] Design GUI mockup.
-- [ ] Implement main loop and event handling.
+- [ ] Add notifications (email/Telegram) on threshold breach.
 - [ ] Create installer script (e.g., pyinstaller, deb).
 - [ ] Configure systemd service for autostart.
+
+_Last updated: 2026‑11‑18 — simulated hardware, GUI, and storage are in; real GPIO backend, notifications, and packaging are next._
 
 ## Notes
 - Use virtualenv for dependency isolation.

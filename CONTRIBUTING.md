@@ -18,9 +18,11 @@ package and gets a test.
    Run locally before opening a PR:
    ```bash
    python3 -m venv .venv && source .venv/bin/activate
-   pip install -e ".[dev]"
-   pytest
+   pip install -e ".[gui,dev]"
+   QT_QPA_PLATFORM=offscreen pytest   # offscreen so GUI tests run anywhere
    ```
+   GUI tests live in `tests/test_gui.py`; they skip automatically if PyQt5
+   is not installed.
 4. **CI must pass.** The workflow runs pytest on Linux, Windows, and macOS
    across Python 3.10–3.13. If a dependency is platform‑specific, make it an
    optional extra (`gui`, `hardware`) rather than a hard dependency.
@@ -38,14 +40,19 @@ package and gets a test.
 
 ## Hardware work
 
-Real sensor/actuator code goes in a new module (e.g. `wine_monitor/gpio.py`)
-and must:
+All hardware access goes through the `HardwareBackend` interface in
+`wine_monitor/hardware.py`. Real sensor/actuator code goes in a new module
+(e.g. `wine_monitor/gpio_backend.py`) and must:
 
-- Only be imported when available (guard the `import RPi.GPIO` with a
-  fallback to the simulator, as `src/main.py` already does).
-- Expose the same read/write shape as the simulator so the rest of the app
-  never cares which backend is active.
+- Only be imported when available (guard `import RPi.GPIO` and fall back to
+  `SimulatedHardware` when it fails, as `gui.create_backend()` already does).
+- Implement the same `read()` / `set_heater()` / `set_fan()` / `set_pump()` /
+  `state()` shape as the simulator so the rest of the app never cares which
+  backend is active.
 - Be covered by tests that exercise the simulator path.
+
+The GUI and storage layers must never import `RPi.GPIO` or `gpiozero`
+directly.
 
 ## Release notes
 

@@ -2,23 +2,28 @@
 
 A Python GUI application for monitoring and controlling a 5‑gallon automated
 wine fermentation setup on a Raspberry Pi: live temperature/humidity/CO₂
-readings from GPIO‑attached sensors, real‑time graphs, threshold alerts, and
-actuator control (heaters, pumps, fans).
+readings from GPIO‑attached sensors, real‑time graphs, threshold alerts,
+actuator control (heater, cooling fan, CO₂ scrubbing pump), and SQLite/CSV
+data logging.
 
-The project is split so the **testable core has no hardware or GUI
-dependencies**. That means the simulation and alerting logic runs — and is
-unit‑tested — on any machine (CI, Windows, a laptop), while the Raspberry Pi
-brings in the GPIO and GUI extras.
+The project is split so the **whole system can run on simulated hardware**:
+the GUI, storage, and alert logic only talk to a `HardwareBackend`
+interface, and `SimulatedHardware` implements it with a small physics model
+(heater/fan thermal drift, fermentation‑driven CO₂, pump scrubbing). That
+means the app — actuators included — runs, and is unit‑tested, on any
+machine (CI, Windows, a laptop), while the real Pi backend drops in behind
+the same interface.
 
 ## Repository layout
 
 ```
-wine_monitor/          # Core package (no hardware/GUI deps)
+wine_monitor/          # Core package (no RPi.GPIO / GUI hard deps)
   sensors.py           # SensorReading, Thresholds, SensorSimulator
-  __main__.py          # Headless demo loop: python -m wine_monitor
-src/
-  main.py              # PyQt5 GUI entry point (target: Raspberry Pi)
-tests/                 # Pytest suite for the core package
+  hardware.py          # HardwareBackend + SimulatedHardware (heater/fan/pump physics)
+  storage.py           # SQLite time-series store + CSV export
+  gui.py               # PyQt5 GUI: live plots, readings, alerts, actuator controls
+  __main__.py          # Console entry: GUI, or --headless terminal demo
+tests/                 # Pytest suite: sensors, hardware, storage, offscreen GUI
 docs/
   roadmap.md           # Sprint plan & milestone status
   phase2-companion-windows.md  # Phase 2: Windows companion + AI expert
@@ -36,52 +41,73 @@ cd wine-monitor
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
-# 3. Install the core (any machine)
-pip install -e .
+# 3. Install (GUI + dev extras; "hardware" is Pi-only)
+pip install -e ".[gui,dev]"
 
-# 4. Run the headless demo (simulated sensors, no display needed)
-python -m wine_monitor
+# 4. Run the GUI (simulated hardware on any machine)
+wine-monitor                    # or: python -m wine_monitor
+wine-monitor --simulate         # force the simulator explicitly
 
-# 5. Run the test suite
+# 5. Terminal-only demo (no display needed)
+python -m wine_monitor --headless
+
+# 6. Run the test suite (GUI tests run offscreen)
 pytest
 ```
 
-## GUI (Raspberry Pi)
+## GUI tour
 
-The PyQt5 front end and GPIO hardware support live in optional extras:
+The window shows, top to bottom:
+
+- **Current readings** — wine temperature, humidity, CO₂, fermentation rate.
+- **Live plots** — three synchronized time series (temp / humidity / CO₂),
+  updated once per second from the store.
+- **Actuators** — checkboxes for heater, fan, and pump, plus a heater
+  setpoint spinner. On simulated hardware you can watch the temperature
+  rise toward the setpoint with the heater on, fall with the fan on, and
+  CO₂ climb with fermentation (then fall when the pump scrubs it).
+- **Alerts** — threshold breaches (e.g. "temperature low: 10.0 °C") appear
+  under the readings.
+- **Export CSV** — dumps the full SQLite log to a CSV file.
+
+Readings persist to `data/wine_monitor.db` (SQLite); pass `--db <path>` to
+use a different location.
+
+## Raspberry Pi
+
+The GUI and hardware support live in optional extras:
 
 ```bash
-# Raspberry Pi / Linux with a display:
 pip install -e ".[gui,hardware]"
-SIMULATE=1 python src/main.py    # 1 = use GPIO simulator, 0 = real RPi.GPIO
 ```
 
-On a non‑Pi machine, or with `SIMULATE=1`, `src/main.py` falls back to the
-bundled GPIO simulator so the window runs anywhere.
-
-## Features (planned → shipped)
-
-- ✅ Simulated sensor feed with realistic drift (humidity, temp, CO₂)
-- ✅ Threshold evaluation with human‑readable alerts
-- ✅ Pytest suite + cross‑platform CI
-- ⬜ Real sensor acquisition (DS18B20, BME280, …) behind the same interface
-- ⬜ Actuator control (heaters, pumps, vents) via GPIO
-- ⬜ Live plots in the GUI (matplotlib)
-- ⬜ Notifications (email, Telegram/Discord) on threshold breach
-- ⬜ SQLite/CSV logging with daily rotation
-- ⬜ Installer + systemd autostart
-
-See [docs/roadmap.md](docs/roadmap.md) for the full plan and
+`wine_monitor.gui.create_backend()` currently returns the simulator
+everywhere; the real GPIO backend (DS18B20, BME280, relays) will plug in
+there — selected on a Pi with `WINE_MONITOR_USE_HW=1`. See
+[docs/roadmap.md](docs/roadmap.md) for milestones and
 [docs/phase2-companion-windows.md](docs/phase2-companion-windows.md) for the
 Phase 2 companion app + AI wine expert.
+
+## Features
+
+- ✅ Simulated hardware stack with thermal/fermentation physics (heater, fan, pump, CO₂)
+- ✅ Threshold evaluation with human‑readable alerts
+- ✅ PyQt5 GUI: live plots, status, actuator controls, CSV export
+- ✅ SQLite persistence + CSV export
+- ✅ 44‑test pytest suite + cross‑platform CI (Py 3.10–3.13, 3 OSes)
+- ⬜ Real sensor acquisition (DS18B20, BME280, …) behind `HardwareBackend`
+- ⬜ Relays/actuators wiring on the Pi
+- ⬜ Notifications (email, Telegram/Discord) on threshold breach
+- ⬜ Installer + systemd autostart
 
 ## Development
 
 - **Branch naming:** `feature/…`, `bugfix/…` (OpenClaw agents use `openclaw/…`).
-- **Tests:** all changes should be accompanied by tests; the core package is
-  hardware/GUI‑free specifically so it can be tested everywhere.
-- **Workflow:** open a pull request against `main`; CI must pass (pytest on
-  Linux, Windows, and macOS for Python 3.10–3.13).
+- **Tests:** required for all changes; the core stays hardware/GUI‑free
+  specifically so it can be tested everywhere. GUI tests run offscreen via
+  `QT_QPA_PLATFORM=offscreen`.
+- **Workflow:** PR against `main`; CI must pass (Linux, Windows, macOS ×
+  Python 3.10–3.13).
 - **Conventions:** see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
