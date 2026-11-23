@@ -21,10 +21,14 @@ wine_monitor/          # Core package (no RPi.GPIO / GUI hard deps)
   sensors.py           # SensorReading, Thresholds, SensorSimulator
   hardware.py          # HardwareBackend + SimulatedHardware (heater/fan/pump physics)
   storage.py           # SQLite time-series store + CSV export
+  notify.py            # Alert notifications: dedupe + console/email backends
+  config.py            # JSON config (wine-monitor.json) with safe fallbacks
   gui.py               # PyQt5 GUI: live plots, readings, alerts, actuator controls
   __main__.py          # Console entry: GUI, or --headless terminal demo
-tests/                 # Pytest suite: sensors, hardware, storage, offscreen GUI
+install.sh             # One-command installer (venv, deps, PATH link, systemd)
+tests/                 # Pytest suite: sensors, hardware, storage, notify, offscreen GUI
 docs/
+  install.md           # Beginner-friendly install guide
   roadmap.md           # Sprint plan & milestone status
   phase2-companion-windows.md  # Phase 2: Windows companion + AI expert
 .github/workflows/     # CI (pytest on Linux/macOS/Windows, Py 3.10–3.13)
@@ -49,11 +53,16 @@ wine-monitor                    # or: python -m wine_monitor
 wine-monitor --simulate         # force the simulator explicitly
 
 # 5. Terminal-only demo (no display needed)
-python -m wine_monitor --headless
+wine-monitor --headless
 
 # 6. Run the test suite (GUI tests run offscreen)
 pytest
 ```
+
+> **Installing on a fresh machine (or a Raspberry Pi)?** Use
+> [`install.sh`](install.sh) — it handles the venv, dependencies, the
+> `wine-monitor` command, and optional systemd autostart. Full beginner
+> guide: [docs/install.md](docs/install.md).
 
 ## GUI tour
 
@@ -67,7 +76,9 @@ The window shows, top to bottom:
   rise toward the setpoint with the heater on, fall with the fan on, and
   CO₂ climb with fermentation (then fall when the pump scrubs it).
 - **Alerts** — threshold breaches (e.g. "temperature low: 10.0 °C") appear
-  under the readings.
+  under the readings. Each distinct alert notifies once while it persists
+  (dedupe + quiet window); optionally by email — fill in the `smtp_*`
+  fields in `wine-monitor.json`.
 - **Export CSV** — dumps the full SQLite log to a CSV file.
 
 Readings persist to `data/wine_monitor.db` (SQLite); pass `--db <path>` to
@@ -94,11 +105,13 @@ Phase 2 companion app + AI wine expert.
 - ✅ Threshold evaluation with human‑readable alerts
 - ✅ PyQt5 GUI: live plots, status, actuator controls, CSV export
 - ✅ SQLite persistence + CSV export
-- ✅ 44‑test pytest suite + cross‑platform CI (Py 3.10–3.13, 3 OSes)
+- ✅ JSON config file with safe fallbacks (wine-monitor.json)
+- ✅ Notifications with dedupe (console now; email via SMTP config)
+- ✅ One-command installer (`install.sh`) + optional systemd autostart
+- ✅ 66‑test pytest suite + cross‑platform CI (Py 3.10–3.13, 3 OSes)
 - ⬜ Real sensor acquisition (DS18B20, BME280, …) behind `HardwareBackend`
 - ⬜ Relays/actuators wiring on the Pi
-- ⬜ Notifications (email, Telegram/Discord) on threshold breach
-- ⬜ Installer + systemd autostart
+- ⬜ Installer & autostart: deb/Snap packaging (systemd already covered)
 
 ## Development
 

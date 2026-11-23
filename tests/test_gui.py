@@ -105,6 +105,9 @@ def test_plots_update_with_enough_points(window):
 def test_setpoint_spin_reaches_backend(window):
     window.setpoint_spin.setValue(33.0)
     assert window.backend._heater_setpoint_c == 33.0
+    # and the public setter agrees
+    window.backend.set_heater_setpoint(21.0)
+    assert window.backend._heater_setpoint_c == 21.0
 
 
 def test_controller_standalone(tmp_path):

@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Monitor and control a 5‑gallon wine fermentation system on a Raspberry Pi."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Loop Eriksen", email = "29931840+LoopEriksen@users.noreply.github.com" }]
 keywords = ["raspberry-pi", "fermentation", "wine", "iot", "gpio"]
 classifiers = [
@@ -28,7 +28,7 @@ hardware = ["RPi.GPIO>=0.7", "gpiozero>=2.0"]
 dev = ["pytest>=8.0", "PyQt5>=5.15"]
 
 [project.scripts]
-wine-monitor = "wine_monitor.gui:main"
+wine-monitor = "wine_monitor.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["wine_monitor*"]

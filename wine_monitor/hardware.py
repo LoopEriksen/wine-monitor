@@ -124,6 +124,10 @@ class SimulatedHardware(HardwareBackend):
     def set_pump(self, on: bool) -> None:
         self._pump = bool(on)
 
+    def set_heater_setpoint(self, celsius: float) -> None:
+        """Adjust the temperature the heater drives toward (e.g. from a GUI spinner)."""
+        self._heater_setpoint_c = float(celsius)
+
     def state(self) -> HardwareState:
         return HardwareState(heater=self._heater, fan=self._fan, pump=self._pump)
 

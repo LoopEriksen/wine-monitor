@@ -38,7 +38,9 @@ from PyQt5.QtWidgets import (
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
+from wine_monitor.config import Config, DEFAULT_CONFIG_PATH
 from wine_monitor.hardware import HardwareBackend, SimulatedHardware
+from wine_monitor.notify import ConsoleNotifier, EmailNotifier, Notifier
 from wine_monitor.sensors import Thresholds
 from wine_monitor.storage import Storage
 
@@ -46,28 +48,35 @@ PLOT_WINDOW = 120  # points kept per series (≈2 min at the 1 Hz tick)
 
 
 class Controller:
-    """Qt-independent heart of the app: one tick per timer interval."""
+    """Qt-independent heart of the app: one tick per timer interval.
+
+    Each tick: read sensors → evaluate thresholds → persist the reading →
+    dispatch notifications for new/persisting alerts.
+    """
 
     def __init__(
         self,
         backend: HardwareBackend,
         storage: Storage,
         thresholds: Optional[Thresholds] = None,
+        notifier: Optional[Notifier] = None,
     ) -> None:
         self.backend = backend
         self.storage = storage
         self.thresholds = thresholds or Thresholds()
+        self.notifier = notifier or Notifier()
         self.last_reading = None
         self.alerts: List[str] = []
         self.tick_count = 0
 
-    def tick(self) -> None:
-        """Read sensors, evaluate thresholds, persist the reading."""
+    def tick(self) -> List[str]:
+        """Read, evaluate, store, and notify; returns dispatched alerts."""
         reading = self.backend.read()
         self.alerts = self.thresholds.evaluate(reading)
         self.storage.add(reading)
         self.last_reading = reading
         self.tick_count += 1
+        return self.notifier.notify(reading, self.alerts)
 
 
 def create_backend(simulate: bool = False) -> HardwareBackend:
@@ -100,12 +109,13 @@ class MainWindow(QMainWindow):
         backend: Optional[HardwareBackend] = None,
         storage: Optional[Storage] = None,
         thresholds: Optional[Thresholds] = None,
+        notifier: Optional[Notifier] = None,
         tick_ms: int = 1000,
     ) -> None:
         super().__init__()
         self.backend = backend or create_backend()
         self.storage = storage or Storage("data/wine_monitor.db")
-        self.controller = Controller(self.backend, self.storage, thresholds)
+        self.controller = Controller(self.backend, self.storage, thresholds, notifier)
 
         self.setWindowTitle("Wine Monitor")
         self.resize(900, 760)
@@ -250,7 +260,7 @@ class MainWindow(QMainWindow):
 
     def _on_setpoint_changed(self, value: float) -> None:
         if isinstance(self.backend, SimulatedHardware):
-            self.backend._heater_setpoint_c = float(value)
+            self.backend.set_heater_setpoint(value)
 
     def _on_export(self) -> None:
         default = "wine-monitor-log.csv"
@@ -281,18 +291,46 @@ class _HRow(QWidget):
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Wine Monitor GUI")
     parser.add_argument("--simulate", action="store_true", help="force the hardware simulator")
-    parser.add_argument("--db", default="data/wine_monitor.db", help="SQLite database path")
-    parser.add_argument("--tick-ms", type=int, default=1000, help="tick interval in milliseconds")
+    parser.add_argument("--db", default=None, help="SQLite database path (overrides config)")
+    parser.add_argument("--config", default=None, help="path to wine-monitor.json")
+    parser.add_argument("--tick-ms", type=int, default=None, help="tick interval ms (overrides config)")
     args = parser.parse_args(argv)
 
     from PyQt5.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
-    storage = Storage(args.db)
+
+    config = Config.load(args.config or DEFAULT_CONFIG_PATH)
+    if args.db:
+        config.db_path = args.db
+    if args.tick_ms:
+        config.tick_ms = args.tick_ms
+
+    notifiers: list = [ConsoleNotifier()]
+    if config.smtp_host:
+        notifiers.append(
+            EmailNotifier(
+                host=config.smtp_host,
+                port=config.smtp_port,
+                user=config.smtp_user,
+                password=config.smtp_password,
+                sender=config.smtp_from,
+                recipient=config.smtp_to,
+            )
+        )
+    notifier = Notifier(
+        backends=notifiers,
+        dedupe=config.notify_dedupe,
+        quiet_seconds=config.notify_quiet_minutes * 60.0,
+    )
+
+    storage = Storage(config.db_path)
     window = MainWindow(
         backend=SimulatedHardware() if args.simulate else create_backend(simulate=args.simulate),
         storage=storage,
-        tick_ms=args.tick_ms,
+        thresholds=config.thresholds(),
+        notifier=notifier,
+        tick_ms=config.tick_ms,
     )
     window.show()
     return app.exec_()

@@ -23,9 +23,9 @@ To build a Python‑based GUI application that monitors and controls a 5‑gallo
 3. Control command interface prototype. ✅ (simulated actuators; real relays pending)
 4. Basic GUI skeleton with status panel. ✅
 5. Real‑time plotting. ✅
-6. Notification module.
+6. Notification module. ✅ (console + email via SMTP config; Telegram/Discord pending)
 7. Persistence & logging. ✅ (SQLite + CSV export)
-8. Installer & autostart.
+8. Installer & autostart. ✅ (install.sh + systemd; deb/Snap packaging pending)
 9. Testing & documentation. ✅ (core; expanded as features land)
 
 ## Tasks (to be updated)
@@ -34,13 +34,13 @@ To build a Python‑based GUI application that monitors and controls a 5‑gallo
 - [x] Write unit tests.
 - [x] Design GUI mockup.
 - [x] Implement main loop and event handling.
+- [x] Add notifications (email/Telegram) on threshold breach. (email ✅; Telegram/Discord ⬜)
+- [x] Create installer script (e.g., pyinstaller, deb). (install.sh + systemd ✅; deb ⬜)
+- [x] Configure systemd service for autostart. (via install.sh --systemd)
 - [ ] Setup Raspberry Pi environment (Python, libraries).
 - [ ] Define GPIO pin mapping and test readings.
-- [ ] Add notifications (email/Telegram) on threshold breach.
-- [ ] Create installer script (e.g., pyinstaller, deb).
-- [ ] Configure systemd service for autostart.
 
-_Last updated: 2026‑11‑18 — simulated hardware, GUI, and storage are in; real GPIO backend, notifications, and packaging are next._
+_Last updated: 2026‑11‑23 — config, notifications, and installer are in; real GPIO backend and Telegram/Discord alerts are next._
 
 ## Notes
 - Use virtualenv for dependency isolation.
