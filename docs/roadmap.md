@@ -4,12 +4,18 @@
 To build a Python‑based GUI application that monitors and controls a 5‑gallon automated wine fermentation system, interfacing with Raspberry Pi GPIO, providing notifications, and graphing key parameters. The system should run continuously, auto‑start at boot, and be deployable via an installer.
 
 ## Project Scope
-- Raspberry Pi 4 (or similar) hosting the application.
-- Python 3.10+ with relevant libraries (PyQt5/6, matplotlib, RPi.GPIO or gpiozero, watchdog, etc.)
+- **Windows is the primary device** — it runs the monitoring GUI (today on
+  the built-in simulator; from Phase 2 onward connected to the Pi over the
+  network).
+- Raspberry Pi 4 (or similar) hosts the physical layer: GPIO sensors and
+  relays (DS18B20, BME280, …).
+- Python 3.10+ with relevant libraries (PyQt5/6, matplotlib; RPi.GPIO or
+  gpiozero on the Pi only).
 - GUI with real‑time graphs, status panels, control buttons.
 - Notification system (email, push, local).
 - Data logging to SQLite/CSV.
-- Installer package (dpkg/apt or Snap) that installs dependencies, configures autostart.
+- One‑command installers: `install.bat` (Windows), `install.sh` (Linux/Pi);
+  systemd autostart on the Pi.
 
 ## High‑Level Architecture
 1. **Data acquisition layer** – GPIO reading + sensor integration (temperature, pressure, etc.).
@@ -40,7 +46,9 @@ To build a Python‑based GUI application that monitors and controls a 5‑gallo
 - [ ] Setup Raspberry Pi environment (Python, libraries).
 - [ ] Define GPIO pin mapping and test readings.
 
-_Last updated: 2026‑11‑23 — config, notifications, and installer are in; real GPIO backend and Telegram/Discord alerts are next._
+_Last updated: 2026‑11‑23 — Windows confirmed as the primary device (install.bat +
+Windows‑first docs). Config, notifications, and installers are in; real GPIO
+backend on the Pi and the Phase 2 Windows↔Pi network link are next._
 
 ## Notes
 - Use virtualenv for dependency isolation.

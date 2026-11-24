@@ -1,157 +1,148 @@
 # Installing Wine Monitor
 
-A beginner-friendly guide to downloading the project from GitHub and running
-it on your machine (Raspberry Pi or any Linux desktop). Windows notes at the
-end.
+A beginner-friendly guide. **Windows is the primary target** — it's your
+intended device. (Linux/Raspberry Pi notes are at the end.)
 
 Two things to know before you start:
 
-- **GitHub download vs `git clone`** — if you just want to *run* the app,
-  download the ZIP (no `git` needed). If you plan to *develop* it, use
-  `git clone`.
-- **A "virtual environment" (venv)** — a self-contained folder that holds the
-  app's Python libraries, so they don't clash with anything else on your
-  machine. The installer creates and manages it for you; you don't need to
-  understand it, just let the script do its thing.
+- **Downloading from GitHub** — you just need to download the ZIP. No
+  "git" knowledge required (git is only for people who want to change the
+  code).
+- **A "virtual environment" (venv)** — a self-contained folder that holds
+  the app's Python libraries so they don't clash with anything else on your
+  computer. The installer creates it for you; you don't need to understand
+  it.
 
 ---
 
-## Option A — One-command install (recommended)
+## Option A — Windows (recommended, ~2 minutes)
 
-### 1. Download the code
+### 1. Install Python (one time only)
 
-**Easiest (no git):** on
-<https://github.com/LoopEriksen/wine-monitor> click the green **Code**
-button → **Download ZIP** → unzip it somewhere, e.g. `~/wine-monitor`.
+1. Go to <https://www.python.org/downloads/> and click the big yellow
+   **Download Python 3.x** button.
+2. Run the installer. **Important:** tick the box at the bottom that says
+   **Add python.exe to PATH**, then click **Install Now**.
+3. Done. (You only need this once; future installs skip straight to step 2.)
 
-**Or with git:**
-```bash
-sudo apt update && sudo apt install -y git        # only the first time
-git clone https://github.com/LoopEriksen/wine-monitor.git
-cd wine-monitor
-```
+### 2. Download Wine Monitor
 
-### 2. Install the prerequisites (first time only)
-
-```bash
-sudo apt update
-sudo apt install -y python3 python3-venv
-```
-The installer will also try to add `python3-venv` and the GUI graphics
-libraries (`libegl1`, `libgl1`) for you — it only needs you to type your
-sudo password once.
+1. Go to <https://github.com/LoopEriksen/wine-monitor>
+2. Click the green **Code** button (top right of the file list) →
+   **Download ZIP**.
+3. Unzip it to a folder you'll keep, e.g. `C:\WineMonitor`.
+   (Right-click the ZIP → **Extract All…**)
 
 ### 3. Run the installer
 
-```bash
-cd wine-monitor
-./install.sh
-```
-What you'll see: Python check → venv created → packages installed → a
-`wine-monitor.json` config file written → a `wine-monitor` command linked
-into your PATH. (If it tells you to add `~/.local/bin` to your PATH, do
-that and open a new terminal.)
+Double-click **`install.bat`** inside the folder. A console window opens and
+runs 4 steps: check Python → create the venv → install the app → create
+launchers. It ends with a "Done!" summary. (If Windows SmartScreen asks
+"Windows protected your PC", click **More info** → **Run anyway** — it's a
+script you downloaded from the project page.)
 
-### 4. Run it
+### 4. Start the app
 
-```bash
-wine-monitor                # opens the GUI
-wine-monitor --headless     # terminal version (no display needed)
-```
-That's it. Stop with `Ctrl+C`.
+- Double-click **`Start Wine Monitor.vbs`** in the folder — the GUI opens
+  with no console window.
+- Or: **Start Menu → Wine Monitor** (the installer creates the shortcut).
 
-### 5. (Pi only) Start automatically at boot
+### 5. First run
 
-```bash
-./install.sh --systemd             # GUI at boot (needs a desktop session)
-./install.sh --systemd --headless  # terminal loop at boot (headless Pi)
-```
-Then:
-```bash
-sudo systemctl start wine-monitor      # start now
-systemctl status wine-monitor          # is it running?
-journalctl -u wine-monitor -f          # watch its output
-sudo systemctl stop wine-monitor       # stop it
-```
+On first start the app creates **`wine-monitor.json`** next to the folder —
+your settings file. Open it in Notepad to change:
 
-### 6. Configure it
+| Setting | What it does |
+|---|---|
+| `temp_min_c` / `temp_max_c` | Temperature alert range (°C) |
+| `humidity_min_pct` / `humidity_max_pct` | Humidity alert range (%) |
+| `tick_ms` | How often it samples (1000 = 1/sec) |
+| `smtp_host`, `smtp_user`, `smtp_password`, `smtp_to` | Fill in to get email alerts (empty = off) |
 
-Edit `wine-monitor.json` (plain text):
-- `temp_min_c` / `temp_max_c` / `humidity_min_pct` / `humidity_max_pct` —
-  the alert thresholds
-- `tick_ms` — how often it samples (1000 = once per second)
-- `db_path` — where the SQLite log lives
-- `smtp_host`, `smtp_user`, `smtp_password`, `smtp_to`, … — fill these in
-  to get email alerts (leaving them empty keeps email off)
+Save, then restart the app.
 
-Save and restart the app.
+**Useful extras**
 
-### Uninstall
-
-```bash
-rm -rf wine-monitor          # or wherever you put it
-rm ~/.local/bin/wine-monitor # the command
-```
+- **Terminal version** (shows readings as plain text — handy on a machine
+  without a display, or if you want to watch it live):
+  ```bat
+  cd C:\WineMonitor
+  .venv\Scripts\wine-monitor.exe --headless
+  ```
+  Stop it with `Ctrl+C`.
+- **Data** is saved in `data\wine_monitor.db` (SQLite). You can also export
+  any time from the GUI's **Export CSV…** button.
+- **Updating later:** download a fresh ZIP, replace the folder contents
+  (keep `wine-monitor.json` and `data\` if you want your settings/history),
+  double-click `install.bat` again.
+- **Uninstall:** delete the folder, the `Start Wine Monitor.vbs` file, and
+  the Start Menu shortcut.
 
 ---
 
-## Option B — Manual install (what the script does, by hand)
+## Option B — Windows, manual (what install.bat does by hand)
 
-```bash
-cd wine-monitor
-python3 -m venv .venv
-source .venv/bin/activate          # "(.venv)" appears in your prompt
-pip install -e ".[gui]"            # add ,hardware on a Raspberry Pi
-deactivate
-.venv/bin/wine-monitor             # run
+Open **Command Prompt** (or PowerShell):
+
+```bat
+cd C:\WineMonitor
+py -3 -m venv .venv
+.venv\Scripts\activate        :: "(.venv)" appears in your prompt
+pip install -e ".[gui]"
+wine-monitor                  :: the app
 ```
-Useful if you want to see exactly what's happening or the script trips up.
+
+(`py -3` is Windows' Python launcher. `deactivate` exits the venv.)
 
 ---
 
-## Updating later
+## Option C — Linux / Raspberry Pi
 
-If you got it with git:
 ```bash
+# first time only:
+sudo apt update && sudo apt install -y python3 python3-venv
+
 cd wine-monitor
-git pull
-./.venv/bin/pip install -e ".[gui]"   # pick up any dependency changes
+./install.sh                 # normal install
+./install.sh --systemd       # also start at boot (Pi with a desktop)
+./install.sh --systemd --headless   # headless Pi: terminal loop at boot
+wine-monitor                 # run
 ```
-If you got the ZIP: download the new ZIP, replace the folder contents, and
-re-run `./install.sh` (it keeps your venv and config).
+
+On a Raspberry Pi, `install.sh` also installs the hardware extras
+(`RPi.GPIO`, `gpiozero`) so the real GPIO backend can be used there.
+
+## How Windows fits the hardware story
+
+The fermentation bay is the Raspberry Pi (it has the GPIO pins and the
+sensors). Your **Windows machine runs the monitoring GUI** — today on the
+built-in simulator, and from Phase 2 onward connected to the Pi over your
+network to show *real* readings and send actuator commands (heater, fan,
+pump). That split is by design: see
+[phase2-companion-windows.md](phase2-companion-windows.md).
+
+Because all hardware access goes through one `HardwareBackend` interface,
+the Windows app never needs `RPi.GPIO` — that's why `install.bat` skips the
+`hardware` extra (it would simply fail to install on Windows).
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| `python3: command not found` | `sudo apt install -y python3 python3-venv` |
-| `No module named venv` | `sudo apt install -y python3-venv` |
-| GUI window doesn't appear / `libGL` or `libEGL` errors | `sudo apt install -y libegl1 libgl1` |
-| `wine-monitor: command not found` | open a new terminal, or `export PATH="$HOME/.local/bin:$PATH"` |
-| Permission denied on `./install.sh` | `chmod +x install.sh` then run it again |
-| Pi headless: GUI fails at boot | run with `--headless` (see step 5) — GUIs need a display |
+| `install.bat` says "Python was not found" | Install Python from python.org (step 1), tick "Add to PATH", run it again |
+| "requires 3.10 or newer" | You have an old Python; install a newer one and re-run |
+| SmartScreen warning on install.bat | More info → Run anyway (or right-click → Properties → "Unblock") |
+| `wine-monitor` works in terminal but no window appears | Windows: make sure the GUI can create a window; try `wine-monitor` from a terminal to see the error |
+| pip fails with a network/SSL error | Antivirus or proxy; retry, or install manually (Option B) to see the exact error |
+| App shows old data after updating | The DB is `data\wine_monitor.db` — delete or export it if you want a clean slate |
+| Headless Pi: GUI fails at boot | Use `./install.sh --systemd --headless` |
 
-## Windows
+## Where things are
 
-The **core** (sensors, alerts, storage) runs on Windows fine — the GUI
-(PyQt5) does too, but `install.sh` is for Linux. Manual steps:
-
-```bat
-git clone https://github.com/LoopEriksen/wine-monitor.git
-cd wine-monitor
-py -3 -m venv .venv
-.venv\Scripts\activate
-pip install -e ".[gui,dev]"
-wine-monitor
-```
-(`py -3` is the Windows Python launcher; install Python 3.10+ from
-python.org first, ticking "Add to PATH".) The GPIO extras are intentionally
-not installed on Windows — only the simulator runs there, which is exactly
-what the hardware abstraction is for.
-
-## Raspberry Pi hardware (future)
-
-Right now the app always runs on the built-in simulator. When the real
-sensors and relays are wired up, a GPIO backend will plug into the same
-`create_backend()` hook in `wine_monitor/gui.py` and be selected on the Pi
-with `WINE_MONITOR_USE_HW=1` — no other code changes.
+| File | What |
+|---|---|
+| `install.bat` | Windows installer (double-click) |
+| `install.sh` | Linux/Pi installer |
+| `wine-monitor.json` | Your settings (created on first run) |
+| `data\wine_monitor.db` | Recorded readings (SQLite) |
+| `Start Wine Monitor.vbs` | Double-click launcher (Windows) |

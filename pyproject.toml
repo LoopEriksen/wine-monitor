@@ -13,6 +13,7 @@ authors = [{ name = "Loop Eriksen", email = "29931840+LoopEriksen@users.noreply.
 keywords = ["raspberry-pi", "fermentation", "wine", "iot", "gpio"]
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Topic :: Home Automation",
 ]
